@@ -1,0 +1,131 @@
+@charset "UTF-8";
+/* Card tổng thể */
+.profile-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 30px;
+  max-width: 450px;
+  margin: 50px auto;
+  box-shadow: 0 12px 40px rgba(0, 114, 188, 0.15);
+  font-family: "Poppins", sans-serif;
+  text-align: center;
+  color: #222;
+  position: relative; }
+
+/* Avatar */
+.avatar-wrapper {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 20px; }
+
+.avatar-wrapper img,
+.avatar-initials {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f2f2f2;
+  border: 4px solid #0072bc;
+  box-shadow: 0 6px 20px rgba(0, 114, 188, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
+  color: #0072bc;
+  transition: 0.3s ease; }
+
+.avatar-wrapper img:hover {
+  transform: scale(1.05); }
+
+.camera-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: #0072bc;
+  color: #fff;
+  border-radius: 50%;
+  padding: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: 0.3s; }
+
+.camera-icon:hover {
+  background: #005a94; }
+
+/* Title */
+.profile-card .title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #0072bc; }
+
+/* Input group minimal */
+.form-group {
+  position: relative;
+  margin-bottom: 28px;
+  text-align: left; }
+
+.form-group input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #ccc;
+  padding: 10px 5px;
+  font-size: 1rem;
+  outline: none;
+  background: transparent;
+  transition: 0.3s; }
+
+.form-group input:focus {
+  border-color: #0072bc; }
+
+.form-group label {
+  position: absolute;
+  top: 10px;
+  left: 5px;
+  color: #777;
+  font-size: 0.9rem;
+  pointer-events: none;
+  transition: 0.3s ease; }
+
+/* Hiệu ứng float label */
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 0;
+  font-size: 0.8rem;
+  color: #0072bc; }
+
+/* Badge */
+.badge-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px; }
+
+.badge {
+  background: #0072bc;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500; }
+
+/* Button */
+.profile-card button {
+  background: linear-gradient(135deg, #0072bc, #00c4ff);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  padding: 14px 0;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease; }
+
+.profile-card button:hover {
+  background: linear-gradient(135deg, #005a94, #009fd6);
+  transform: translateY(-2px); }

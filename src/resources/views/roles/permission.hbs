@@ -1,0 +1,93 @@
+<h2>Quản lý quyền (Permissions)</h2>
+<!-- FORM THÊM / SỬA PERMISSION -->
+{{#if (includes userPermissions "add_permission")}}
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-success text-white">
+    <i class="bx bx-plus-circle"></i> Thêm / Cập nhật Quyền
+  </div>
+  <div class="card-body">
+    <form id="formPermission" action="/roles/add-permission" method="POST" class="row g-3">
+      <input type="hidden" id="permissionId" name="id" value="">
+
+      <div class="col-md-4">
+        <label for="permissionName" class="form-label">Tên quyền</label>
+        <input type="text" id="permissionName" name="permission_name" class="form-control" placeholder="VD: add_user, edit_role..." required>
+      </div>
+
+      <div class="col-md-5">
+        <label for="permissionDesc" class="form-label">Mô tả</label>
+        <input type="text" id="permissionDesc" name="description" class="form-control" placeholder="Nhập mô tả quyền" required>
+      </div>
+
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" id="btnSubmitPermission" class="btn btn-success w-100">
+          <i class="bx bx-save"></i> Thêm
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{{/if}}
+<!-- DANH SÁCH PERMISSION -->
+<div class="card shadow-sm">
+  <div class="card-header bg-dark text-white">
+    <i class="bx bx-list-ul"></i> Danh sách Quyền
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-bordered table-hover mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>#</th>
+          <th>Tên quyền</th>
+          <th>Mô tả</th>
+          <th class="text-center">Hành động</th>
+          <th>Thời gian tạo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each permission}}
+        <tr>
+          <th scope="row">{{sum @index 1}}</th>
+          <td>{{this.permission_name}}</td>
+          <td>{{this.description}}</td>
+          <td class="text-center">
+            <div class="d-flex justify-content-center gap-2">
+              <!-- Nút sửa -->
+              <button type="button" class="btn btn-warning btn-sm"
+                onclick="editPermission('{{this._id}}', '{{this.permission_name}}', '{{this.description}}')">
+                <i class="bx bx-edit-alt"></i> Sửa
+              </button>
+
+              <!-- Nút xóa -->
+              <form action="/roles/delete-permission/{{this._id}}" method="POST"
+                onsubmit="return confirm('Bạn có chắc chắn muốn xóa quyền này không?')">
+                <button type="submit" class="btn btn-danger btn-sm">
+                  <i class="bx bx-trash"></i> Xóa
+                </button>
+              </form>
+            </div>
+          </td>
+          <td>{{formatDate this.createdAt}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function editPermission(id, name, desc) {
+    document.getElementById('permissionId').value = id;
+    document.getElementById('permissionName').value = name;
+    document.getElementById('permissionDesc').value = desc;
+
+    const btn = document.getElementById('btnSubmitPermission');
+    btn.textContent = "Cập nhật";
+    btn.classList.remove("btn-success");
+    btn.classList.add("btn-primary");
+
+    const form = document.getElementById('formPermission');
+    form.action = "/roles/edit-permission/" + id;
+    form.method = "POST";
+  }
+</script>

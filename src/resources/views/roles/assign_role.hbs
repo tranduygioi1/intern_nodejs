@@ -1,0 +1,36 @@
+<h2 class="mb-4 text-center">Gán Vai Trò cho User</h2>
+
+<form action="/roles/assign-role/{{user._id}}" method="POST">
+  <!-- Thông tin user -->
+  <div class="mb-3">
+    <label class="form-label fw-bold">Thông tin User</label>
+    <div class="border rounded p-3 bg-light">
+      <p><strong>Họ tên:</strong> {{user.name}}</p>
+      <p><strong>Username:</strong> {{user.username}}</p>
+      <p><strong>Phòng ban:</strong> {{user.department}}</p>
+      <p><strong>Email:</strong> {{user.email}}</p>
+    </div>
+  </div>
+
+  <!-- Danh sách role -->
+  <div class="mb-3">
+    <label class="form-label fw-bold">Chọn vai trò</label>
+    <select name="role" class="form-select">
+      {{#each roles}}
+        <option value="{{this._id}}" {{#if (eq ../user.role this._id)}}selected{{/if}}>
+          {{this.role_name}} - {{this.description}}
+        </option>
+      {{/each}}
+    </select>
+  </div>
+
+  <!-- Nút hành động -->
+  <div class="d-flex justify-content-between">
+    <a href="/home/users" class="btn btn-secondary">
+      <i class="bx bx-arrow-back"></i> Quay lại
+    </a>
+    <button type="submit" class="btn btn-success">
+      <i class="bx bx-save"></i> Cập nhật Vai trò
+    </button>
+  </div>
+</form>

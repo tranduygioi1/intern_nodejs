@@ -1,0 +1,116 @@
+<h2>Quản lý Vai trò (Roles)</h2>
+
+<!-- FORM THÊM / SỬA ROLE -->
+{{#if (includes userPermissions "add_roles")}} 
+
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <i class="bx bx-plus-circle"></i> Thêm / Cập nhật Vai trò
+  </div>
+  <div class="card-body">
+    <form id="formRole" action="/roles/add-roles" method="POST" class="row g-3">
+      <input type="hidden" id="roleId" name="id" value="">
+
+      <div class="col-md-4">
+        <label for="roleName" class="form-label">Tên vai trò</label>
+        <input type="text" id="roleName" name="role_name" class="form-control" placeholder="VD: admin, user..." required>
+      </div>
+
+      <div class="col-md-5">
+        <label for="roleDesc" class="form-label">Mô tả</label>
+        <input type="text" id="roleDesc" name="description" class="form-control" placeholder="Nhập mô tả" required>
+      </div>
+
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" id="btnSubmitRole" class="btn btn-success w-100">
+          <i class="bx bx-save"></i> Thêm
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{{/if}}
+<!-- DANH SÁCH ROLE -->
+<div class="card shadow-sm">
+  <div class="card-header bg-dark text-white">
+    <i class="bx bx-list-ul"></i> Danh sách Vai trò
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-bordered table-hover mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th style="width:40px;">#</th>
+          <th style="width: 100px">Tên vai trò</th>
+          <th>Mô tả</th>
+          <th style="min-width:220px;">Quyền</th>
+          <th class="text-center" style="width:320px;">Hành động</th>
+          <th style="width:160px;">Thời gian tạo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each roles}}
+        <tr>
+          <th scope="row">{{sum @index 1}}</th>
+          <td>{{this.role_name}}</td>
+          <td>{{this.description}}</td>
+
+          <!-- Hiển thị permissions (cả khi permissions là array of objects hoặc array of strings) -->
+          <td>
+            {{#if this.permissions}}
+              {{#each this.permissions}}
+                <span class="badge bg-info me-1 mb-1">
+                  {{this.permission_name}}
+                </span>
+              {{/each}}
+            {{else}}
+              <span class="text-muted">Chưa có quyền</span>
+            {{/if}}
+          </td>
+
+          <td class="text-center">
+            <div class="d-flex justify-content-center gap-2">
+              <!-- Nút sửa -->
+              <button type="button" class="btn btn-warning btn-sm"
+                onclick="editRole('{{this._id}}', '{{this.role_name}}', '{{this.description}}')">
+                <i class="bx bx-edit-alt"></i> Sửa
+              </button>
+
+              <!-- Nút xóa -->
+              <form action="/roles/delete-roles/{{this._id}}" method="POST"
+                onsubmit="return confirm('Bạn có chắc chắn muốn xóa vai trò này không?')">
+                <button type="submit" class="btn btn-danger btn-sm">
+                  <i class="bx bx-trash"></i> Xóa
+                </button>
+              </form>
+
+              <!-- Nút gán quyền -->
+              <a href="/roles/assign-permission/{{this._id}}" class="btn btn-primary btn-sm">
+                <i class="bx bx-link-alt"></i> Gán quyền
+              </a>
+            </div>
+          </td>
+
+          <td>{{formatDate this.createdAt}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function editRole(id, name, desc) {
+    document.getElementById('roleId').value = id;
+    document.getElementById('roleName').value = name;
+    document.getElementById('roleDesc').value = desc;
+
+    const btn = document.getElementById('btnSubmitRole');
+    btn.textContent = "Cập nhật";
+    btn.classList.remove("btn-success");
+    btn.classList.add("btn-primary");
+
+    const form = document.getElementById('formRole');
+    form.action = "/roles/edit-roles/" + id;
+    form.method = "POST";
+  }
+</script>

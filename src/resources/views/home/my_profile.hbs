@@ -1,0 +1,109 @@
+<div class="container mt-5">
+  <div class="row shadow-lg rounded-4 overflow-hidden">
+    <!-- Left column -->
+    <div class="col-md-4 bg-dark text-white text-center p-4">
+      <div class="mb-3 d-flex justify-content-center">
+        {{#if user.avatar}}
+          <img src="{{user.avatar}}" 
+               class="rounded-circle border border-3 border-white object-fit-cover"
+               style="width:150px; height:150px; object-fit:cover;" 
+               id="avatar-preview">
+        {{else}}
+          <div class="rounded-circle border border-3 border-white d-flex align-items-center justify-content-center"
+               style="width:150px; height:150px; font-size:48px; background:#475569; margin: 0 auto;"
+               id="avatar-preview">
+            {{userInitials}}
+          </div>
+        {{/if}}
+      </div>
+
+      <h4 class="fw-bold">{{user.name}}</h4>
+      <p class="text-muted">{{user.email}}</p>
+      <label for="avatar-upload" class="btn btn-outline-light btn-sm mt-2">Đổi ảnh đại diện</label>
+    </div>
+
+    <!-- Right column -->
+    <div class="col-md-8 bg-white p-5">
+      <h3 class="mb-4 fw-bold text-primary">Cập nhật thông tin</h3>
+      <form action="/home/update-profile" method="POST" enctype="multipart/form-data" id="profile-form">
+
+        <input type="file" id="avatar-upload" name="avatar" accept="image/*" hidden>
+
+        <div class="mb-3">
+          <label class="form-label">Họ và Tên</label>
+          <input type="text" name="name" class="form-control rounded-pill" value="{{user.name}}" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control rounded-pill" value="{{user.email}}" disabled>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Phòng ban</label>
+          <input type="text" name="department" class="form-control rounded-pill" value="{{user.department}}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Vai trò</label>
+          <div>
+            {{#if user.role}}
+              <span class="badge bg-primary me-1">{{user.role.role_name}}</span>
+            {{/if}}
+          </div>
+        </div>
+        <button type="submit" class="btn btn-gradient px-5 py-2 rounded-pill fw-bold">Lưu thay đổi</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn-gradient {
+    background: linear-gradient(90deg, #06b6d4, #3b82f6);
+    color: white;
+    border: none;
+  }
+  .btn-gradient:hover {
+    opacity: 0.9;
+  }
+
+  /*  Giúp avatar luôn hiển thị tròn, không méo */
+  #avatar-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+</style>
+
+<!-- Script xem trước ảnh -->
+<script>
+  document.getElementById('avatar-upload').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('avatar-preview');
+
+        // Nếu là <img> thì thay đổi src
+        if (preview.tagName.toLowerCase() === 'img') {
+          preview.src = e.target.result;
+          preview.style.objectFit = 'cover';
+        } 
+        // Nếu là <div> (trường hợp user chưa có avatar)
+        else {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.id = 'avatar-preview';
+          img.className = 'rounded-circle border border-3 border-white';
+          img.style.width = '150px';
+          img.style.height = '150px';
+          img.style.objectFit = 'cover';
+          preview.replaceWith(img);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>

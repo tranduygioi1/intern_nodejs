@@ -1,0 +1,57 @@
+@charset "UTF-8";
+body {
+  font-family: Arial, sans-serif;
+  background: #eaf4fc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0; }
+
+.login-box {
+  background: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  width: 100%;
+  max-width: 350px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+
+.login-box h2 {
+  margin-bottom: 20px;
+  color: #2980b9; }
+
+.input-group {
+  margin-bottom: 15px;
+  text-align: left; }
+
+.input-group label {
+  display: inline-block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #333; }
+
+.input-group input {
+  display: block;
+  /* đảm bảo input xuống dòng */
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+  /* tránh bị tràn */ }
+
+.btn-login {
+  width: 100%;
+  padding: 10px;
+  background: #3498db;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 15px;
+  cursor: pointer; }
+
+.btn-login:hover {
+  background: #2980b9; }

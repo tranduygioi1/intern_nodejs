@@ -1,0 +1,30 @@
+<h2>Gán Quyền cho Vai trò</h2>
+
+<form action="/roles/assign-permission/{{role._id}}" method="POST">
+  <div class="mb-3">
+    <label class="form-label">Tên Vai trò</label>
+    <input type="text" value="{{role.role_name}}" class="form-control" disabled>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Chọn quyền</label>
+    <div>
+      {{#each permissions}}
+        <div class="form-check">
+          <input class="form-check-input" 
+                 type="checkbox" 
+                 name="permissions" 
+                 value="{{this._id}}" 
+                 id="perm{{@index}}"
+                 {{#if (includes ../role.permissions this._id)}}checked{{/if}}>
+          <label class="form-check-label" for="perm{{@index}}">
+            {{this.permission_name}} - {{this.description}}
+          </label>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-success">Cập nhật quyền</button>
+  <a href="/roles" class="btn btn-secondary ms-2">Quay lại</a>
+</form>

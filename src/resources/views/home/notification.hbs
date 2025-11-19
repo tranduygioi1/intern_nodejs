@@ -1,0 +1,57 @@
+<div class="container py-4">
+  <h3 class="mb-3 d-flex align-items-center">
+    <i class="bx bx-bell me-2 text-warning"></i>
+    <span>Thông báo</span>
+  </h3>
+  <hr class="border-secondary opacity-50 mb-4">
+
+  {{#if notifications.length}}
+    <ul class="list-group border-0 shadow-sm rounded-3 overflow-hidden">
+      {{#each notifications}}
+        <li class="list-group-item border-0 border-bottom d-flex align-items-start bg-light-subtle hover-bg p-3">
+          <div class="flex-shrink-0 me-3">
+            {{#if this.sender.avatar}}
+              <img src="{{this.sender.avatar}}" alt="{{this.sender.name}}" 
+                   class="rounded-circle border border-2 border-light shadow-sm"
+                   style="width:45px;height:45px;object-fit:cover;">
+            {{else}}
+              <i class="bx bx-user-circle fs-1 text-secondary"></i>
+            {{/if}}
+          </div>
+
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between">
+              <strong class="text-dark">{{this.sender.name}}</strong>
+              <small class="text-muted fst-italic">{{formatDate this.createdAt}}</small>
+            </div>
+            <p class="mb-0 mt-1 text-secondary">{{this.message}}</p>
+          </div>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <div class="alert alert-info mt-5 text-center shadow-sm border-0 rounded-3 py-4">
+      <i class="bx bx-info-circle fs-3 mb-2 d-block"></i>
+      <strong>Hiện chưa có thông báo nào.</strong><br>
+      <small>Hãy kết nối và tương tác để nhận thông báo mới.</small>
+    </div>
+  {{/if}}
+</div>
+
+<style>
+  /* Màu nền nhẹ cho từng item */
+  .bg-light-subtle {
+    background-color: #f9f9f9;
+  }
+
+  /* Hiệu ứng hover cho từng thông báo */
+  .hover-bg:hover {
+    background-color: #eef6ff;
+    transition: background-color 0.25s ease;
+  }
+
+  /* Đẹp hơn cho list-group */
+  .list-group-item + .list-group-item {
+    border-top: 1px solid #e5e5e5 !important;
+  }
+</style>
