@@ -1,7 +1,9 @@
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
-const fs = require('fs');
 const path = require('path');
+const { minioClient, avatarBucket} = require('../../config/minio');
+const crypto = require('crypto');
+const userEmitter = require('../../app/events/Event')
 
 class HomeController{
     async home(req, res, next){
@@ -37,6 +39,8 @@ class HomeController{
             })
             await user.save();
 
+            userEmitter.emit('userAdded', user);
+
             res.redirect('/home')
 
         } catch (error) {
@@ -49,7 +53,10 @@ class HomeController{
             const {id} = req.params
             await User.findByIdAndDelete(id);
             
+            userEmitter.emit('userDeleted', id);
+
             res.redirect('/home')
+    
         } catch (error) {
             next(error)
         }
@@ -75,6 +82,8 @@ class HomeController{
 
             await User.findByIdAndUpdate(id, {name, username, department, email})
 
+            userEmitter.emit('userUpdated', id);
+
             res.redirect('/home')
 
         } catch (error) {
@@ -90,7 +99,7 @@ class HomeController{
         let query = {};
 
         if (q.trim() !== '') {
-            const regex = new RegExp(q.trim(), 'i');l
+            const regex = new RegExp(q.trim(), 'i');
             query = { $or: [{ username: regex }, { email: regex }] };
         }
 
@@ -101,28 +110,60 @@ class HomeController{
 
         res.render('home/users', { users, q });
         } catch (error) {
-        next(error);
+            next(error);
         }
     }
 
-    // async users(req, res, next){
-    //     try {
-    //         const q = req.query.q || '';
-    //         let query = {}
+    async my_profile(req, res, next) {
+        try {
+        if (!req.user) return res.redirect('/login');
+        const freshUser = await User.findById(req.user._id)
+            .populate('role')
+            .lean();
+        res.render('home/my_profile', { user: freshUser });
+        } catch (error) {
+            next(error);
+        }
+    }
 
-    //         if(q.trim() !==''){
-    //             const regex = new RegExp( q.trim(), 'i');
-    //             query = { $or: [{ username: regex}, { email: regex}]};
-    //         }
-    //         const users = await User.find(query)
-    //             .populate('role')
-    //             .lean();
+    async update_profile(req, res, next) {
+        try {
+        const userId = req.user._id;
+        const { name, department, avatarBase64 } = req.body;
 
-    //         res.render('home/users', {users, q});
-    //     } catch (error) {
-    //         next(error) 
-    //     }
-    // }
+        let updateData = { name, department };
+
+        if (avatarBase64) {
+            // Lấy buffer từ base64
+            const base64Data = avatarBase64.split(',')[1];
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            // Tạo tên file ngẫu nhiên
+            const ext = avatarBase64.includes('image/png') ? 'png' : 'jpg';
+            const fileName = `avatar_${crypto.randomBytes(12).toString('hex')}.${ext}`;
+
+            // Upload lên MinIO
+            await minioClient.putObject(avatarBucket, fileName, buffer, {
+            'Content-Type': `image/${ext}`,
+            });
+
+            const avatarUrl = `/media/${fileName}`; // hoặc đường dẫn MinIO public
+            updateData.avatar = avatarUrl;
+        }
+
+        await User.findByIdAndUpdate(userId, updateData);
+
+        userEmitter.emit('profileUpdated', {
+            userId,
+            ...updateData
+        });
+
+        res.redirect('/home/my-profile');
+        
+        } catch (error) {
+            next(error);
+        }
+    }
 
     // async friends(req, res, next) {
     //     try {
@@ -146,59 +187,59 @@ class HomeController{
     // }
 
 
-    async my_profile(req, res, next){
-        try {
-            if (!req.user) {
-            return res.redirect('/login');
-            }
+    // async my_profile(req, res, next){
+    //     try {
+    //         if (!req.user) {
+    //         return res.redirect('/login');
+    //         }
 
-            const freshUser = await User.findById(req.user._id)
-                .populate('role')
-                .lean();
-            res.render('home/my_profile', { user: freshUser });
-        } catch (error) {
-            next(error);
-        }
-    }
+    //         const freshUser = await User.findById(req.user._id)
+    //             .populate('role')
+    //             .lean();
+    //         res.render('home/my_profile', { user: freshUser });
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
 
-    async update_profile(req, res, next){
-        try {
-            const userId = req.user._id;
-            const { name, username, department } = req.body;
+    // async update_profile(req, res, next){
+    //     try {
+    //         const userId = req.user._id;
+    //         const { name, username, department } = req.body;
 
-            let updateData = {name, username, department};
+    //         let updateData = {name, username, department};
 
-            if(req.file){
-                const avataPath = `/uploads/avatars/${req.file.filename}`;
+    //         if(req.file){
+    //             const avataPath = `/uploads/avatars/${req.file.filename}`;
 
-                //lay thong tin user hien tai
-                const currentUser = await User.findById(userId);
+    //             //lay thong tin user hi en tai   
+    //             const currentUser = await User.findById(userId);
 
-                //xoa anh cu
-                if(currentUser.avatar){
-                    const oldPath = path.join(__dirname, '../../public', currentUser.avatar);
-                    if(fs.existsSync(oldPath)){
-                        try{
-                            fs.unlinkSync(oldPath);
-                            console.log('Da xoa anh cu: ', oldPath);
-                        } catch(error){
-                            console.log('Loi xoa anh cu: ', error);
-                        }
-                    }
-                }
-                updateData.avatar = avataPath;
-            }
+    //             //xoa anh cu
+    //             if(currentUser.avatar){
+    //                 const oldPath = path.join(__dirname, '../../public', currentUser.avatar);
+    //                 if(fs.existsSync(oldPath)){
+    //                     try{
+    //                         fs.unlinkSync(oldPath);
+    //                         console.log('Da xoa anh cu: ', oldPath);
+    //                     } catch(error){
+    //                         console.log('Loi xoa anh cu: ', error);
+    //                     }
+    //                 }
+    //             }
+    //             updateData.avatar = avataPath;
+    //         }
 
-            //update thong tin user
-            await User.findByIdAndUpdate(userId, updateData);
+    //         //update thong tin user
+    //         await User.findByIdAndUpdate(userId, updateData);
 
-            //chuyen huong de middleware check login lai user tu Db
-            res.redirect('/home/my-profile');
+    //         //chuyen huong de middleware check login lai user tu Db
+    //         res.redirect('/home/my-profile');
 
-        } catch (error) {
-            next(error);
-        }
-    }
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
 }
 
 module.exports = new HomeController();

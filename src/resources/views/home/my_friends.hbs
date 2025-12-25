@@ -32,12 +32,18 @@
             <h5 class="mb-1 text-truncate" style="max-width: 150px;">{{this.name}}</h5>
             <p class="text-muted mb-2 text-truncate" style="max-width: 150px;">@{{this.username}}</p>
 
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap justify-content-center">
+
+              <a href="/messages/{{this._id}}" class="btn btn-outline-primary btn-sm">
+                <i class="bx bx-message-rounded-dots"></i> Nhắn tin
+              </a>
 
               <button class="btn btn-outline-danger btn-sm btn-unfriend" data-id="{{this._id}}">
                 <i class="bx bx-user-x"></i> Hủy kết bạn
               </button>
+
             </div>
+
           </div>
         </div>
       </div>

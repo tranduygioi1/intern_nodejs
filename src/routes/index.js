@@ -8,7 +8,7 @@ const mediaRouter = require('./media');
 function router(app){
     app.use('/', loginRouter);
 
-    app.use('/home', homeRouter(app));
+    app.use('/home', homeRouter);
     
     app.use('/roles', rolesRouter);
 

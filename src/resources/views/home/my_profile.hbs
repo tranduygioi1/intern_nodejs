@@ -61,7 +61,7 @@
 <style>
   .btn-gradient {
     background: linear-gradient(90deg, #06b6d4, #3b82f6);
-    color: white;
+    color: white; 
     border: none;
   }
   .btn-gradient:hover {
@@ -77,33 +77,58 @@
   }
 </style>
 
-<!-- Script xem trước ảnh -->
-<script>
-  document.getElementById('avatar-upload').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const preview = document.getElementById('avatar-preview');
+<input type="file" id="avatar-upload" accept="image/*" hidden>
 
-        // Nếu là <img> thì thay đổi src
-        if (preview.tagName.toLowerCase() === 'img') {
-          preview.src = e.target.result;
-          preview.style.objectFit = 'cover';
-        } 
-        // Nếu là <div> (trường hợp user chưa có avatar)
-        else {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          img.id = 'avatar-preview';
-          img.className = 'rounded-circle border border-3 border-white';
-          img.style.width = '150px';
-          img.style.height = '150px';
-          img.style.objectFit = 'cover';
-          preview.replaceWith(img);
-        }
-      };
-      reader.readAsDataURL(file);
+<script>
+const fileInput = document.getElementById('avatar-upload');
+const form = document.getElementById('profile-form');
+let avatarBase64 = '';
+
+fileInput.addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    avatarBase64 = e.target.result;
+
+    const preview = document.getElementById('avatar-preview');
+    if (preview.tagName.toLowerCase() === 'img') {
+      preview.src = avatarBase64;
+    } else {
+      const img = document.createElement('img');
+      img.src = avatarBase64;
+      img.id = 'avatar-preview';
+      img.className = 'rounded-circle border border-3 border-white';
+      img.style.width = '150px';
+      img.style.height = '150px';
+      img.style.objectFit = 'cover';
+      preview.replaceWith(img);
     }
+  };
+  reader.readAsDataURL(file);
+});
+
+// Submit form JSON thay vì multipart
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const data = {
+    name: form.name.value,
+    department: form.department.value,
+    avatarBase64: avatarBase64 || null
+  };
+
+  const res = await fetch('/home/update-profile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
   });
+
+  if (res.ok) {
+    window.location.reload(); // reload để cập nhật avatar mới
+  } else {
+    alert('Có lỗi xảy ra!');
+  }
+});
 </script>
