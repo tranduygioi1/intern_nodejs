@@ -64,7 +64,7 @@ class FriendsController{
             res.render('home/my_friends', {
                 friends,
                 q: req.query.q,
-                nguoiGuiId: req.user._id.toString() // ✅ ĐẶT Ở ĐÂY
+                nguoiGuiId: req.user._id.toString()
             });
 
         } catch (error) {

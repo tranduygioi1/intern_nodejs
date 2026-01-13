@@ -91,6 +91,14 @@
 
   // RENDER 1 TIN NHẮN
   function renderMessage(msg) {
+
+    console.log("📩 Tin nhắn nhận được:", msg);
+    console.log("➡ So sánh:", {
+      msgNguoiGui: msg.nguoiGuiId,
+      nguoiGui,
+      isMe: String(msg.nguoiGuiId) === String(nguoiGui)
+    });
+
     const isMe = String(msg.nguoiGuiId) === String(nguoiGui);
 
     const div = document.createElement('div');

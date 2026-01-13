@@ -37,7 +37,7 @@ module.exports = (io) => {
 
     console.log('🟢 User connected:', socket.id, 'userId:', userId);
 
-    // ✅ JOIN ROOM THEO USER ID (CỐT LÕI)
+    // JOIN ROOM THEO USER ID
     socket.join(userId.toString());
 
     // ============================
