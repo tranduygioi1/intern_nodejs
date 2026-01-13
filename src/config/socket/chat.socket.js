@@ -4,7 +4,10 @@ const jwt = require('jsonwebtoken');
 
 const SECRET_KEY = 'My_VNPT';
 
-module.exports = (io) => {
+// ============================
+// INIT SOCKET
+// ============================
+function chatSocket(io) {
 
   // ============================
   // SOCKET AUTH
@@ -32,7 +35,6 @@ module.exports = (io) => {
   // ============================
   io.on('connection', (socket) => {
     const userId = socket.userId;
-
     if (!userId) return;
 
     console.log('🟢 User connected:', socket.id, 'userId:', userId);
@@ -44,10 +46,8 @@ module.exports = (io) => {
     // GỬI TIN NHẮN
     // ============================
     socket.on('gui_tin_nhan', async ({ nguoiNhan, noiDung }) => {
-
       if (!nguoiNhan || !noiDung) return;
 
-      // LƯU DB
       const tinNhan = await Message.create({
         nguoiGui: userId,
         nguoiNhan,
@@ -56,40 +56,42 @@ module.exports = (io) => {
 
       const payload = {
         nguoiGuiId: userId.toString(),
-        nguoiNhanId: nguoiNhan,
+        nguoiNhanId: nguoiNhan.toString(),
         noiDung,
         thoiGian: tinNhan.createdAt
       };
 
-      // GỬI CHO NGƯỜI NHẬN
       io.to(nguoiNhan.toString()).emit('nhan_tin_nhan', payload);
-
-      // GỬI LẠI CHO NGƯỜI GỬI
-      io.to(userId.toString()).emit('nhan_tin_nhan', payload);
+      socket.emit('nhan_tin_nhan', payload);
     });
 
-      //LỊCH SỬ CHAT
-      socket.on('load_history', async ({nguoiNhan}) => {
-        if (!nguoiNhan) return;
+    // ============================
+    // LOAD LỊCH SỬ CHAT
+    // ============================
+    socket.on('load_history', async ({ nguoiNhan }) => {
+      if (!nguoiNhan) return;
 
-        const tinNhan = await Message.find({
-          $or: [
-            { nguoiGui: userId, nguoiNhan},
-            { nguoiGui: nguoiNhan, nguoiNhan: userId}
-          ]
-        }).sort({ createdAt: 1});
+      const tinNhan = await Message.find({
+        $or: [
+          { nguoiGui: userId, nguoiNhan },
+          { nguoiGui: nguoiNhan, nguoiNhan: userId }
+        ]
+      }).sort({ createdAt: 1 });
 
-        socket.emit('chat_history', tinNhan.map(tn => ({
+      socket.emit(
+        'chat_history',
+        tinNhan.map(tn => ({
           nguoiGuiId: tn.nguoiGui.toString(),
           noiDung: tn.noiDung,
-          thoiGian: tn.createdAt,
-        
-        })))
-      })
-
+          thoiGian: tn.createdAt
+        }))
+      );
+    });
 
     socket.on('disconnect', () => {
       console.log('🔴 User disconnected:', socket.id);
     });
   });
-};
+}
+
+module.exports = chatSocket;

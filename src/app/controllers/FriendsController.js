@@ -1,6 +1,5 @@
 const User = require('../models/User')
 const Notification = require('../models/Notification');
-const { pluralize } = require('mongoose');
 
 class FriendsController{
     async friends(req, res, next) {

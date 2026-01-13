@@ -8,15 +8,15 @@ const db = require('./config/db');
 const cookieParser = require('cookie-parser');
 const moment = require('moment');
 
-// 👉 THÊM
+// THÊM
 const http = require('http');
 const { Server } = require('socket.io');
 
-// 👉 TẠO HTTP SERVER + SOCKET.IO
+// TẠO HTTP SERVER + SOCKET.IO
 const server = http.createServer(app);
 const io = new Server(server);
 
-// 👉 LOAD SOCKET CHAT
+// LOAD SOCKET CHAT
 require('./config/socket/chat.socket')(io);
 
 // =======================
