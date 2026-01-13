@@ -1,0 +1,70 @@
+{{!-- <div class="container-fluid">
+  <div class="row vh-100">
+
+    <!-- CỘT CHAT -->
+    <div class="col-md-8 d-flex flex-column border-end">
+
+      <div class="p-3 border-bottom fw-bold">
+        💬 Trò chuyện
+      </div>
+        <div id="khung-chat" class="flex-grow-1 p-3 overflow-auto bg-light">
+          {{#each tinNhan}}
+            <div class="mb-2 {{#if (eq this.nguoiGuiId ../nguoiGuiId)}}text-end{{/if}}">
+              <span class="badge bg-{{#if (eq this.nguoiGuiId ../nguoiGuiId)}}primary{{else}}secondary{{/if}}">
+                {{this.noiDung}}
+              </span>
+            </div>
+          {{/each}}
+        </div>
+
+
+      <form id="form-chat" class="p-3 border-top d-flex gap-2">
+        <input type="text" id="noiDung" class="form-control" placeholder="Nhập tin nhắn..." autocomplete="off">
+        <button class="btn btn-primary">Gửi</button>
+      </form>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  const nguoiGui = '{{nguoiGuiId}}';
+  const nguoiNhan = '{{nguoiNhanId}}';
+  const roomId = '{{roomId}}';
+
+  socket.emit('join_room', roomId);
+
+  const form = document.getElementById('form-chat');
+  const input = document.getElementById('noiDung');
+  const khungChat = document.getElementById('khung-chat');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!input.value.trim()) return;
+
+    socket.emit('gui_tin_nhan', {
+      nguoiGui,
+      nguoiNhan,
+      noiDung: input.value,
+      roomId
+    });
+
+    input.value = '';
+  });
+
+  socket.on('nhan_tin_nhan', (data) => {
+    const div = document.createElement('div');
+    div.className = 'mb-2 ' + (data.nguoiGui === nguoiGui ? 'text-end' : '');
+    div.innerHTML = `
+      <span class="badge bg-${data.nguoiGui === nguoiGui ? 'primary' : 'secondary'}">
+        ${data.noiDung}
+      </span>
+    `;
+    khungChat.appendChild(div);
+    khungChat.scrollTop = khungChat.scrollHeight;
+  });
+</script> --}}

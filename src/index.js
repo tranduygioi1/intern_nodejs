@@ -7,40 +7,27 @@ const port = 3000;
 const db = require('./config/db');
 const cookieParser = require('cookie-parser');
 const moment = require('moment');
-const multer = require('multer');
-const fs = require('fs'); 
 
+// 👉 THÊM
+const http = require('http');
+const { Server } = require('socket.io');
 
-// //CẤU HÌNH MULTER CHO UPLOAD ẢNH 
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     const uploadDir = path.join(__dirname, 'public/uploads/avatars');
-//     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-//     cb(null, uploadDir);
-//   },
-//   filename: function (req, file, cb) {
-//     const ext = path.extname(file.originalname);
-//     const filename = Date.now() + '-' + Math.round(Math.random() * 1e9) + ext;
-//     cb(null, filename);
-//   },
-// });
+// 👉 TẠO HTTP SERVER + SOCKET.IO
+const server = http.createServer(app);
+const io = new Server(server);
 
+// 👉 LOAD SOCKET CHAT
+require('./config/socket/chat.socket')(io);
 
-// const upload = multer({ storage });
-// app.set('upload', upload); // để các controller hoặc router lấy dùng
-
-  
-// Engine
+// =======================
+// HANDLEBARS
+// =======================
 app.engine('hbs', engine({
   extname: '.hbs',
   helpers: {
     sum: (a, b) => a + b,
-
-    formatDate: (date) => {
-      return moment(date).format('HH:mm DD/MM/YYYY');
-    },
-     eq: (a, b) => String(a) === String(b), // so sánh _id
-     
+    formatDate: (date) => moment(date).format('HH:mm DD/MM/YYYY'),
+    eq: (a, b) => String(a) === String(b),
     includes: (array, value) => {
       if (!array) return false;
       return array.some(v => v.toString() === value.toString());
@@ -51,24 +38,35 @@ app.engine('hbs', engine({
 app.set('views', path.join(__dirname, 'resources/views'));
 app.set('view engine', 'hbs');
 
+// =======================
+// MIDDLEWARE
+// =======================
 app.use(express.static(path.join(__dirname, 'public')));
-  
-// Middleware parse form đặt trước router
-// tăng giới hạn body lên 10MB
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
-db.connect(); 
 
-// Routes
+// =======================
+// DATABASE
+// =======================
+db.connect();
+
+// =======================
+// ROUTES
+// =======================
 router(app);
 
-// Middleware xử lý lỗi chung
+// =======================
+// ERROR HANDLER
+// =======================
 app.use((err, req, res, next) => {
   console.error('Error stack:', err.stack);
   res.status(500).send('Có lỗi xảy ra, vui lòng thử lại sau!');
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+// =======================
+// START SERVER
+// =======================
+server.listen(port, () => {
+  console.log(`🚀 Server + Socket.IO chạy tại http://localhost:${port}`);
 });

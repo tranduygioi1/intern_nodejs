@@ -135,7 +135,7 @@ class HomeController{
 
         if (avatarBase64) {
             // Lấy buffer từ base64
-            const base64Data = avatarBase64.split(',')[1];
+            const base64Data = avatarBase64.split(',')[1];  
             const buffer = Buffer.from(base64Data, 'base64');
 
             // Tạo tên file ngẫu nhiên

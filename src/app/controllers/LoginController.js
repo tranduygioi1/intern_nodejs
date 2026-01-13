@@ -124,7 +124,7 @@ class LoginController {
             res.locals.name = user.name;
             res.locals.userInitials = user.name ? user.name.charAt(0).toUpperCase(): 'A';
             res.locals.avatar = user.avatar || null;
-
+            
             next()
 
         } catch (error) {

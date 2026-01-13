@@ -2,6 +2,7 @@
   <h2 class="mb-0 flex-shrink-0">Danh Sách Bạn Bè</h2>
 
   <form action="/friends/my_friends" method="GET" class="d-flex flex-grow-0" style="min-width: 400px;">
+  <link rel="stylesheet" href="/css/chat.css">
     <div class="input-group">
       <input type="text" name="q" class="form-control" placeholder="Tìm theo tên, username, email..." value="{{q}}">
       <button class="btn btn-primary" type="submit">
@@ -34,9 +35,14 @@
 
             <div class="d-flex gap-2 flex-wrap justify-content-center">
 
-              <a href="/messages/{{this._id}}" class="btn btn-outline-primary btn-sm">
+              <button
+                class="btn btn-outline-primary btn-sm btn-chat"
+                data-id="{{this._id}}"
+                data-name="{{this.name}}">
                 <i class="bx bx-message-rounded-dots"></i> Nhắn tin
-              </a>
+              </button>
+
+
 
               <button class="btn btn-outline-danger btn-sm btn-unfriend" data-id="{{this._id}}">
                 <i class="bx bx-user-x"></i> Hủy kết bạn
@@ -55,22 +61,97 @@
   </div>
 {{/if}}
 
+<div id="chat-popup" class="chat-popup d-none">
+  <div class="chat-header">
+    <span id="chat-name"></span>
+    <button id="close-chat">✖</button>
+  </div>
+
+  <div id="chat-body" class="chat-body"></div>
+
+  <form id="chat-form" class="chat-footer">
+    <input id="chat-input" type="text" placeholder="Nhập tin nhắn..." autocomplete="off">
+    <button type="submit">➤</button>
+  </form>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const buttons = document.querySelectorAll('.btn-unfriend');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.dataset.id;
-        if (confirm('Bạn có chắc muốn hủy kết bạn với người này không?')) {
-          const res = await fetch(`/friends/unfriend/${id}`, { method: 'POST' });
-          const data = await res.json();
-          if (data.success) {
-            btn.closest('.col-md-3').remove();
-          } else {
-            alert(data.message || 'Có lỗi xảy ra');
-          }
-        }
-      });
+  const socket = io();
+
+  const nguoiGui = "{{nguoiGuiId}}";
+
+  let nguoiNhan = null;
+  let roomId = null;
+
+  const popup = document.getElementById('chat-popup');
+  const chatBody = document.getElementById('chat-body');
+  const chatName = document.getElementById('chat-name');
+  const chatInput = document.getElementById('chat-input');
+
+  // RENDER 1 TIN NHẮN
+  function renderMessage(msg) {
+    const isMe = String(msg.nguoiGuiId) === String(nguoiGui);
+
+    const div = document.createElement('div');
+    div.classList.add('chat-msg', isMe ? 'me' : 'other');
+
+    div.innerHTML = `<div class="bubble">${msg.noiDung}</div>`;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+
+
+  // MỞ CHAT
+  document.querySelectorAll('.btn-chat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      nguoiNhan = btn.dataset.id;
+      chatName.innerText = btn.dataset.name;
+
+      roomId = [nguoiGui, nguoiNhan].sort().join('_');
+      popup.classList.remove('d-none');
+      chatBody.innerHTML = '';
+
+      socket.emit('load_history', { nguoiNhan });
+      socket.emit('join_room', roomId);
+
     });
   });
+
+  // ĐÓNG CHAT
+  document.getElementById('close-chat').onclick = () => {
+    popup.classList.add('d-none');
+  };
+
+  // GỬI TIN
+  document.getElementById('chat-form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!chatInput.value.trim()) return;
+
+    socket.emit('gui_tin_nhan', {
+      nguoiNhan,
+      noiDung: chatInput.value,
+      roomId
+    });
+
+    chatInput.value = '';
+  });
+
+  socket.on('chat_history', messages => {
+    chatBody.innerHTML = '';
+
+    messages.forEach(renderMessage);
+
+    chatBody.scrollTop = chatBody.scrollHeight;
+  })
+
+  // NHẬN TIN REALTIME
+  socket.on('nhan_tin_nhan', data => {
+    renderMessage(data);
+  });
+
+
 </script>
+
+

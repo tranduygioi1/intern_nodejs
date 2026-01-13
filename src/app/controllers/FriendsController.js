@@ -61,7 +61,11 @@ class FriendsController{
             const user = await User.findById(userId).lean();
             const friends = await User.find({ _id: { $in: user.friends}}).lean();
 
-            res.render('home/my_friends', {friends})
+            res.render('home/my_friends', {
+                friends,
+                q: req.query.q,
+                nguoiGuiId: req.user._id.toString() // ✅ ĐẶT Ở ĐÂY
+            });
 
         } catch (error) {
             next(error);

@@ -4,6 +4,7 @@ const rolesRouter = require('./roles')
 const friendsRouter = require('./friends')
 const postRouter = require('./post')
 const mediaRouter = require('./media');
+const messageRouter = require('./message')
 
 function router(app){
     app.use('/', loginRouter);
@@ -17,6 +18,9 @@ function router(app){
     app.use('/news', postRouter);
 
     app.use('/media', mediaRouter);
+
+    app.use('/message', messageRouter);
+
 
 }
 
