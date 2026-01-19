@@ -1,4 +1,11 @@
 @charset "UTF-8";
+.unread-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #ff3b30;
+  border-radius: 50%;
+  display: inline-block; }
+
 /* =====================
    CHAT POPUP
 ===================== */

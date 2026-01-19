@@ -174,19 +174,19 @@ class FriendsController{
         }
     }
 
-    async unfriend(req, res, next){
-        try {
-            const currentId = req.user._id;
-            const friendId = req.params.id;
+    // async unfriend(req, res, next){
+    //     try {
+    //         const currentId = req.user._id;
+    //         const friendId = req.params.id;
 
-            await Promise.all([
-                User.findByIdAndUpdate(currentId, {$pull: {friends: friendId}}),
-                User.findByIdAndUpdate(currentId, {$pull: {friends: currentId}})
-            ])
-        } catch (error) {
-            next(error);
-        }
-    }
+    //         await Promise.all([
+    //             User.findByIdAndUpdate(currentId, {$pull: {friends: friendId}}),
+    //             User.findByIdAndUpdate(currentId, {$pull: {friends: currentId}})
+    //         ])
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
     
     async unfriend(req, res, next){
         try {

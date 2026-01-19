@@ -1,29 +1,71 @@
-{{!-- <div class="container-fluid">
-  <div class="row vh-100">
+<div class="row" style="height: 80vh">
+  <link rel="stylesheet" href="/css/chat.css">
 
-    <!-- CỘT CHAT -->
-    <div class="col-md-8 d-flex flex-column border-end">
+  <!-- ===== DANH SÁCH CHAT ===== -->
+  <div class="col-md-4 border-end overflow-auto">
+    <h5 class="p-3">Messenger</h5>
 
-      <div class="p-3 border-bottom fw-bold">
-        💬 Trò chuyện
-      </div>
-        <div id="khung-chat" class="flex-grow-1 p-3 overflow-auto bg-light">
-          {{#each tinNhan}}
-            <div class="mb-2 {{#if (eq this.nguoiGuiId ../nguoiGuiId)}}text-end{{/if}}">
-              <span class="badge bg-{{#if (eq this.nguoiGuiId ../nguoiGuiId)}}primary{{else}}secondary{{/if}}">
-                {{this.noiDung}}
-              </span>
-            </div>
-          {{/each}}
+    {{#each chatList}}
+      <a
+        href="/messenger/{{_id}}"
+        class="d-flex p-2 text-decoration-none text-dark border-bottom align-items-center
+        {{#if (eq _id ../selectedUserId)}}bg-light{{/if}}"
+      >
+        <img src="{{avatar}}" class="rounded-circle me-2" width="40" height="40">
+
+        <div class="flex-grow-1">
+          <strong>{{name}}</strong>
+          <div class="text-muted small text-truncate" style="max-width: 180px">
+            {{lastMessage}}
+          </div>
         </div>
 
+        {{#if hasUnread}}
+          <span class="unread-dot ms-2"></span>
+        {{/if}}
+      </a>
+      {{/each}}
 
-      <form id="form-chat" class="p-3 border-top d-flex gap-2">
-        <input type="text" id="noiDung" class="form-control" placeholder="Nhập tin nhắn..." autocomplete="off">
+  </div>
+
+  <!-- ===== KHUNG CHAT ===== -->
+  <div class="col-md-8 d-flex flex-column">
+
+    {{#if selectedUser}}
+
+      <!-- HEADER -->
+      <div class="border-bottom p-3 d-flex align-items-center">
+        <img src="{{selectedUser.avatar}}" class="rounded-circle me-2" width="40">
+        <strong>{{selectedUser.name}}</strong>
+      </div>
+
+      <!-- BODY -->
+      <div id="chat-body" class="flex-grow-1 p-3 overflow-auto">
+        {{#each messages}}
+          <div class="mb-2 {{#if (eq nguoiGui ../userId)}}text-end{{/if}}">
+            <span
+              class="badge px-3 py-2
+              {{#if (eq nguoiGui ../userId)}}bg-primary{{else}}bg-secondary{{/if}}"
+            >
+              {{noiDung}}
+            </span>
+          </div>
+        {{/each}}
+      </div>
+
+      <!-- FOOTER -->
+      <form id="chat-form" class="border-top p-2 d-flex">
+        <input id="chat-input" class="form-control me-2" placeholder="Nhập tin nhắn..." autocomplete="off">
         <button class="btn btn-primary">Gửi</button>
       </form>
 
-    </div>
+    {{else}}
+
+      <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+        Chọn một cuộc trò chuyện
+      </div>
+
+    {{/if}}
 
   </div>
 </div>
@@ -32,39 +74,130 @@
 <script>
   const socket = io();
 
-  const nguoiGui = '{{nguoiGuiId}}';
-  const nguoiNhan = '{{nguoiNhanId}}';
-  const roomId = '{{roomId}}';
+  const userId = "{{userId}}";
+  const selectedUserId = "{{selectedUserId}}";
 
-  socket.emit('join_room', roomId);
+  const form = document.querySelector('#chat-form');
+  const input = document.querySelector('#chat-input');
+  const chatBody = document.querySelector('#chat-body');
 
-  const form = document.getElementById('form-chat');
-  const input = document.getElementById('noiDung');
-  const khungChat = document.getElementById('khung-chat');
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (!input.value.trim()) return;
-
-    socket.emit('gui_tin_nhan', {
-      nguoiGui,
-      nguoiNhan,
-      noiDung: input.value,
-      roomId
-    });
-
-    input.value = '';
-  });
-
-  socket.on('nhan_tin_nhan', (data) => {
+  function renderMessage(msg) {
     const div = document.createElement('div');
-    div.className = 'mb-2 ' + (data.nguoiGui === nguoiGui ? 'text-end' : '');
+    div.className =
+      msg.nguoiGuiId === userId ? 'text-end mb-2' : 'mb-2';
+
     div.innerHTML = `
-      <span class="badge bg-${data.nguoiGui === nguoiGui ? 'primary' : 'secondary'}">
-        ${data.noiDung}
+      <span class="badge px-3 py-2 ${
+        msg.nguoiGuiId === userId ? 'bg-primary' : 'bg-secondary'
+      }">
+        ${msg.noiDung}
       </span>
     `;
-    khungChat.appendChild(div);
-    khungChat.scrollTop = khungChat.scrollHeight;
+    chatBody.appendChild(div);
+  }
+
+  /* ========= LOAD LỊCH SỬ ========= */
+  if (selectedUserId) {
+    socket.emit('load_history', {
+      nguoiNhan: selectedUserId
+    });
+  }
+
+  socket.on('chat_history', messages => {
+    chatBody.innerHTML = '';
+    messages.forEach(renderMessage);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  });
+
+
+  socket.on('unread_message', data => {
+    const fromUserId = data?.from;
+    if (!fromUserId) return;
+
+    const chatItem = document.querySelector(
+      `a[href="/messenger/${fromUserId}"]`
+    );
+
+    if (chatItem && !chatItem.querySelector('.unread-dot')) {
+      const dot = document.createElement('span');
+      dot.className = 'unread-dot ms-2';
+      chatItem.appendChild(dot);
+    }
+  });
+
+
+  /* ========= GỬI TIN ========= */
+  if (form) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!input.value.trim()) return;
+
+      socket.emit('gui_tin_nhan', {
+        nguoiNhan: selectedUserId,
+        noiDung: input.value
+      });
+
+      input.value = '';
+    });
+  }
+
+  /* ========= NHẬN TIN REALTIME ========= */
+  socket.on('nhan_tin_nhan', msg => {
+    if (
+      msg.nguoiGuiId === selectedUserId ||
+      msg.nguoiGuiId === userId
+    ) {
+      renderMessage(msg);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  });
+</script>
+
+
+{{!-- <script src="/socket.io/socket.io.js"></script>
+
+<script>
+  const socket = io();
+
+  const userId = "{{userId}}";
+  const selectedUserId = "{{selectedUserId}}";
+
+  const form = document.querySelector('#chat-form');
+  const input = document.querySelector('#chat-input');
+  const chatBody = document.querySelector('#chat-body');
+
+  if (form) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!input.value.trim()) return;
+
+      socket.emit('gui_tin_nhan', {
+        nguoiNhan: selectedUserId,
+        noiDung: input.value
+      });
+
+      input.value = '';
+    });
+  }
+
+  socket.on('nhan_tin_nhan', msg => {
+    if (
+      msg.nguoiGuiId === selectedUserId ||
+      msg.nguoiGuiId === userId
+    ) {
+      const div = document.createElement('div');
+      div.className =
+        msg.nguoiGuiId === userId ? 'text-end mb-2' : 'mb-2';
+
+      div.innerHTML = `
+        <span class="badge px-3 py-2 ${
+          msg.nguoiGuiId === userId ? 'bg-primary' : 'bg-secondary'
+        }">
+          ${msg.noiDung}
+        </span>
+      `;
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
   });
 </script> --}}

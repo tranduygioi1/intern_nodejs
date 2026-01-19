@@ -42,8 +42,6 @@
                 <i class="bx bx-message-rounded-dots"></i> Nhắn tin
               </button>
 
-
-
               <button class="btn btn-outline-danger btn-sm btn-unfriend" data-id="{{this._id}}">
                 <i class="bx bx-user-x"></i> Hủy kết bạn
               </button>
@@ -109,8 +107,6 @@
     chatBody.scrollTop = chatBody.scrollHeight;
   }
 
-
-
   // MỞ CHAT
   document.querySelectorAll('.btn-chat').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -159,6 +155,38 @@
     renderMessage(data);
   });
 
+  /* =========================
+      HỦY KẾT BẠN
+  ========================== */
+  document.querySelectorAll('.btn-unfriend').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const friendId = btn.dataset.id;
+
+      if (!confirm('Bạn có chắc muốn hủy kết bạn không?')) return;
+
+      try {
+        const res = await fetch(`/friends/unfriend/${friendId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          const card = btn.closest('.col-md-3');
+          card.style.transition = '0.3s';
+          card.style.opacity = '0';
+
+          setTimeout(() => card.remove(), 300);
+        } else {
+          alert(data.message || 'Không thể hủy kết bạn');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Có lỗi xảy ra');
+      }
+    });
+  });
 
 </script>
 

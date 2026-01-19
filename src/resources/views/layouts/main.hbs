@@ -39,9 +39,26 @@
 
             <li><a href="/friends/my-friends" class="nav-link"><i class="bx bx-user"></i><span class="item-txt">My Friends</span></a></li>
 
+            {{!-- <li><a href="/messenger" class="nav-link"><i class="bx bx-message-rounded-dots"></i><span class="item-txt">Messenger</span></a></li> --}}
+            <li>
+  <a href="/messenger" class="nav-link position-relative">
+    <i class="bx bx-message-rounded-dots"></i>
+    <span class="item-txt">Messenger</span>
+
+    <span
+      id="msg-badge"
+      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+    >
+      0
+    </span>
+  </a>
+</li>
+
             <li><a href="/friends/notification" class="nav-link"><i class="bx bx-bell"></i><span class="item-txt">Notification</span></a></li>
 
             <li><a href="/home/my-profile" class="nav-link"><i class="bx bx-id-card"></i><span class="item-txt">My Profile</span></a></li>
+
+
 
         </ul>
       </div>
@@ -55,5 +72,39 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const socket = io();
+      const msgBadge = document.getElementById('msg-badge');
+
+      function updateBadge(badge, count) {
+        if (!badge) return;
+
+        if (count > 0) {
+          badge.textContent = count;
+          badge.classList.remove('d-none');
+        } else {
+          badge.classList.add('d-none');
+        }
+      }
+
+      // LOAD BAN ĐẦU
+      fetch('/messenger/unread/count')
+        .then(res => res.json())
+        .then(data => updateBadge(msgBadge, data.count));
+
+      // REALTIME
+      socket.on('unread_message', () => {
+        fetch('/messenger/unread/count')
+          .then(res => res.json())
+          .then(data => updateBadge(msgBadge, data.count));
+      });
+    });
+  </script>
 </body>
 </html>
+
+</body>
+</html>
+

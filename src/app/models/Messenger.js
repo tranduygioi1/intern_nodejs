@@ -12,12 +12,14 @@ const messageSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    noiDung: {
-        type: String,
-        required: true
+    noiDung: String,
+
+    daDoc: {
+        type: Boolean,
+        default: false   
     }
     }, {
         timestamps: true
     });
-module.exports = mongoose.model('Message', messageSchema, "message")
+module.exports = mongoose.model('Messenger', messageSchema, "messenger")
 

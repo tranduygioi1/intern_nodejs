@@ -8,7 +8,7 @@ const db = require('./config/db');
 const cookieParser = require('cookie-parser');
 const moment = require('moment');
 
-// THÊM
+
 const http = require('http');
 const { Server } = require('socket.io');
 

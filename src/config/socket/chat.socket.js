@@ -1,17 +1,10 @@
-const Message = require('../../app/models/Message');
+const Message = require('../../app/models/Messenger');
 const cookie = require('cookie');
 const jwt = require('jsonwebtoken');
 
 const SECRET_KEY = 'My_VNPT';
 
-// ============================
-// INIT SOCKET
-// ============================
 function chatSocket(io) {
-
-  // ============================
-  // SOCKET AUTH
-  // ============================
   io.use((socket, next) => {
     try {
       const cookieHeader = socket.request.headers.cookie;
@@ -25,33 +18,27 @@ function chatSocket(io) {
 
       next();
     } catch (err) {
-      console.log('❌ Socket auth error:', err.message);
       next();
     }
   });
 
-  // ============================
-  // CONNECTION
-  // ============================
-  io.on('connection', (socket) => {
+  io.on('connection', socket => {
     const userId = socket.userId;
     if (!userId) return;
 
-    console.log('🟢 User connected:', socket.id, 'userId:', userId);
+    console.log('🟢 User connected:', socket.id, 'userId:', socket.userId);
 
-    // JOIN ROOM THEO USER ID
     socket.join(userId.toString());
 
-    // ============================
-    // GỬI TIN NHẮN
-    // ============================
+    /* ===== GỬI TIN ===== */
     socket.on('gui_tin_nhan', async ({ nguoiNhan, noiDung }) => {
       if (!nguoiNhan || !noiDung) return;
 
       const tinNhan = await Message.create({
         nguoiGui: userId,
         nguoiNhan,
-        noiDung
+        noiDung,
+        daDoc: false
       });
 
       const payload = {
@@ -63,13 +50,23 @@ function chatSocket(io) {
 
       io.to(nguoiNhan.toString()).emit('nhan_tin_nhan', payload);
       socket.emit('nhan_tin_nhan', payload);
+
+      // 🔔 báo unread
+      io.to(nguoiNhan.toString()).emit('unread_message');
     });
 
-    // ============================
-    // LOAD LỊCH SỬ CHAT
-    // ============================
+    /* ===== LOAD HISTORY ===== */
     socket.on('load_history', async ({ nguoiNhan }) => {
       if (!nguoiNhan) return;
+
+      await Message.updateMany(
+        {
+          nguoiGui: nguoiNhan,
+          nguoiNhan: userId,
+          daDoc: false
+        },
+        { daDoc: true }
+      );
 
       const tinNhan = await Message.find({
         $or: [
@@ -86,10 +83,13 @@ function chatSocket(io) {
           thoiGian: tn.createdAt
         }))
       );
-    });
 
-    socket.on('disconnect', () => {
-      console.log('🔴 User disconnected:', socket.id);
+      io.to(userId.toString()).emit('unread_message');
+
+      socket.on('disconnect', () => {
+        console.log('🔴 User disconnected:', socket.id);
+      });
+      
     });
   });
 }
