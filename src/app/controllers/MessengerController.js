@@ -90,7 +90,7 @@ class MessageController {
     let selectedUser = null;
 
     if (selectedUserId) {
-      // ✅ đánh dấu đã đọc
+      // đánh dấu đã đọc
       // await TinNhan.updateMany(
       //   {
       //     nguoiGui: selectedUserId,
