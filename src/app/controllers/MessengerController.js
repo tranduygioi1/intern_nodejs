@@ -37,7 +37,6 @@ class MessageController {
           noiDung: 1,
           createdAt: 1,
 
-          // ✅ THÊM ĐOẠN NÀY
           isUnread: {
             $cond: [
               {
@@ -58,7 +57,7 @@ class MessageController {
           _id: '$otherUser',
           lastMessage: { $first: '$noiDung' },
           lastTime: { $first: '$createdAt' },
-          hasUnread: { $max: '$isUnread' } // ✅ BÂY GIỜ MỚI ĐÚNG
+          hasUnread: { $max: '$isUnread' } 
         }
       }
     ]);
