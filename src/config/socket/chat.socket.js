@@ -51,7 +51,7 @@ function chatSocket(io) {
       io.to(nguoiNhan.toString()).emit('nhan_tin_nhan', payload);
       socket.emit('nhan_tin_nhan', payload);
 
-      // 🔔 báo unread
+      // báo unread
       io.to(nguoiNhan.toString()).emit('unread_message');
     });
 
